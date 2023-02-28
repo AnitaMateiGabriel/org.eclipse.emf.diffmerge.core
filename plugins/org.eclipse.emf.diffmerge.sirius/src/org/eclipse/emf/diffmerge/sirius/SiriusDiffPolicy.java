@@ -27,6 +27,7 @@ import org.eclipse.sirius.business.api.resource.ResourceDescriptor;
 import org.eclipse.sirius.diagram.DiagramPackage;
 import org.eclipse.sirius.diagram.sequence.ordering.OrderingPackage;
 import org.eclipse.sirius.viewpoint.ViewpointPackage;
+import org.eclipse.sirius.viewpoint.description.DescriptionPackage;
 
 
 /**
@@ -63,7 +64,8 @@ public class SiriusDiffPolicy extends GMFDiffPolicy {
   private static final Collection<EClass> UNSIGNIFICANT_TYPES = Arrays
       .asList(OrderingPackage.eINSTANCE.getEventEndsOrdering(),
           OrderingPackage.eINSTANCE.getInstanceRolesOrdering(),
-          ViewpointPackage.eINSTANCE.getUIState());
+          ViewpointPackage.eINSTANCE.getUIState(),
+          DescriptionPackage.eINSTANCE.getDAnnotationEntry());
   
   /**
    * The set of String attributes for which the empty string value must not be
@@ -124,8 +126,7 @@ public class SiriusDiffPolicy extends GMFDiffPolicy {
   public boolean coverValue(Object value_p, Object attribute_p,
       ITreeDataScope<EObject> scope_p) {
     boolean result;
-    if (IGNORING_EMPTY_STRING_ATTRIBUTES.contains(attribute_p)
-        && ((String) value_p).length() == 0) {
+    if (shouldNotCoverValue(value_p, attribute_p)) {
       result = false;
     } else {
       result = super.coverValue(value_p, attribute_p, scope_p);
@@ -133,6 +134,13 @@ public class SiriusDiffPolicy extends GMFDiffPolicy {
     return result;
   }
   
+  private boolean shouldNotCoverValue(Object value_p, Object attribute_p) {
+    if ((IGNORING_EMPTY_STRING_ATTRIBUTES.contains(attribute_p) && ((String) value_p).length() == 0)
+        || DescriptionPackage.eINSTANCE.getDAnnotationEntry_Details() == attribute_p)
+      return true;
+    return false;
+  }
+
   /**
    * @see org.eclipse.emf.diffmerge.impl.policies.ConfigurableDiffPolicy#doConsiderOrdered(org.eclipse.emf.ecore.EStructuralFeature)
    */
